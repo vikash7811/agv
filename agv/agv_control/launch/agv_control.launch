@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+    <!--Load joint controller configurations from YAML file to parameter server-->
+    <rosparam file="$(find agv_control)/config/agv_control.yaml" command="load"/>
+ <!--load the controller s-->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+          output="screen" ns="/agv" args="base_steer_joint_controller forklift_prismatic_joint_controller
+          joint_state_controller  steer_to_roll_joint_controller --shutdown-timeout 3"/>
+    <!-- convert joint states to TF transforms for rviz,etc #### robot state publisher published tf of robot while joint state publish
+      encoder data-->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+          respawn="false" output="screen">
+        <remap from="/joint_states" to="/agv/joint_states"/>
+    </node>
+
+</launch>

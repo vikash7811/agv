@@ -1,0 +1,794 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<robot name="agv">
+
+    <material name="red">
+        <color rgba="0.8 0 0 1"/>
+    </material>
+
+    <material name="yellow">
+        <color rgba="1 1 0 1"/>
+    </material>
+
+    <material name="grey">
+        <color rgba="0.75 0.75 0.75 1"/>
+    </material>
+
+    <material name="black">
+        <color rgba="0 0 0 1"/>
+    </material>
+
+    <material name="blue">
+        <color rgba="0 0 0.8 1"/>
+    </material>
+
+    <material name="green">
+        <color rgba="0 0 0.8 1"/>
+    </material>
+
+   <gazebo>
+      <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        <robotNamespace>/</robotNamespace>
+        <robotSimType>steer_bot_hardware_gazebo/SteerBotHardwareGazebo</robotSimType>
+      </plugin>
+   </gazebo>
+
+   <link name="footprint" />
+
+   <joint name="base_joint" type="fixed">
+      <parent link="footprint"/>
+      <child link="base_link"/>
+   </joint>
+
+
+
+    <link name="base_link">
+        <visual>
+            <origin xyz="0 0 0.625" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.84 0.7 1"/>
+            </geometry>
+            <material name="yellow"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.125" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.84 0.7 1"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0.125" rpy="0 0 0"/>
+            <mass value="300"/>
+            <inertia ixx="37.25" ixy="0.0" ixz="0.0" iyy="42.64" iyz="0.0" izz="29.89"/>
+        </inertial>
+
+    </link>
+
+    <gazebo reference="base_link">
+        <gravity>true</gravity>
+        <material>Gazebo/Yellow</material>
+    </gazebo>
+
+    <joint name="base_steer_joint" type="revolute">
+        <parent link="base_link"/>
+        <child link="steer_link"/>
+        <origin xyz="0 0.2 0.5"/>
+        <limit effort="1" velocity="0.25" lower="-1.20" upper="1.20"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+
+    <transmission name="trans1">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="base_steer_joint">
+         <hardwareInterface>EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor1">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+
+   </transmission>
+
+    <link name="steer_link">
+        <visual>
+            <origin xyz="0 0 0.195" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="0.39" radius="0.1"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0.195" rpy="0 0 0"/>
+            <mass value="2"/>
+            <inertia ixx="0.030350" ixy="0.0" ixz="0.0" iyy="0.030350" iyz="0.0" izz="0.01000"/>
+
+        </inertial>
+    </link>
+
+    <joint name="steer_to_roll_joint" type="continuous">
+        <parent link="steer_link"/>
+        <child link="roll_link"/>
+        <origin xyz="0 0 -0.97" rpy="0 0 0"/>
+        <limit effort="0.1" velocity="0.35"/>
+        <axis xyz="1 0 0"/>
+    </joint>
+
+    <transmission name="trans2">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="steer_to_roll_joint">
+         <hardwareInterface>EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor2">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+
+   </transmission>
+
+
+    <link name="roll_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <geometry>
+                <cylinder length="0.08" radius="0.125"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <mass value="2"/>
+            <inertia ixx="0.0133" ixy="0.0" ixz="0.0" iyy="0.0133" iyz="0.0" izz="0.0234"/>
+        </inertial>
+    </link>
+
+    <gazebo reference="roll_link">
+        <!--kp>1000.0</kp>
+        <kd>10.0</kd>
+        <mu1>10.0</mu1>
+        <mu2>10.0</mu2-->
+
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+
+    <joint name="left_caster_yawn_joint" type="revolute">
+        <parent link="base_link"/>
+        <child link="left_caster_base_link"/>
+        <origin rpy="0 0 0" xyz="0.23 0.2 0"/>
+        <limit effort="0.01" velocity="0.4" lower="-1.5" upper="1.5" />
+        <axis xyz="0 0 1"/>
+    </joint>
+
+    <link name="left_caster_base_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="0.005" radius="0.005"/>
+            </geometry>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.005"/>
+            <inertia ixx="0.00e-08" ixy="0.0" ixz="0.0" iyy="0.00e-08" iyz="0.0" izz="0.00e-08"/>
+        </inertial>
+
+    </link>
+
+
+
+    <joint name="left_caster_roll_joint" type="continuous">
+        <parent link="left_caster_base_link"/>
+        <child link="left_caster"/>
+        <origin rpy="0 0 0" xyz="0 0 -0.47"/>
+        <limit effort="0.01" velocity="0.4"/>
+        <axis xyz="1 0 0"/>
+    </joint>
+
+    <link name="left_caster">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <geometry>
+                <cylinder length="0.05" radius=".125"/>
+            </geometry>
+            <material name="grey"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <mass value="1"/>
+            <inertia ixx="0.00411" ixy="0.0" ixz="0.0" iyy="0.00411" iyz="0.0" izz="0.007812"/>
+        </inertial>
+
+    </link>
+
+    <gazebo reference="left_caster">
+        <!--kp>1000.0</kp>
+        <kd>10.0</kd>
+        <mu1>10.0</mu1>
+        <mu2>10.0</mu2-->
+
+        <material>Gazebo/Grey</material>
+    </gazebo>
+
+
+    <joint name="right_caster_yawn_joint" type="revolute">
+        <parent link="base_link"/>
+        <child link="right_caster_base_link"/>
+        <origin rpy="0 0 0" xyz="-0.23 0.2 0"/>
+        <limit effort="0.01" velocity="0.4" lower="-1.5" upper="1.5" />
+        <axis xyz="0 0 1"/>
+    </joint>
+
+    <link name="right_caster_base_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder length="0.005" radius="0.005"/>
+            </geometry>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.005"/>
+            <inertia ixx="0.00e-08" ixy="0.0" ixz="0.0" iyy="0.00e-08" iyz="0.0" izz="0.00e-08"/>
+        </inertial>
+    </link>
+
+
+
+
+
+    <joint name="right_caster_roll_joint" type="continuous">
+        <parent link="right_caster_base_link"/>
+        <child link="right_caster"/>
+        <origin rpy="0 0 0" xyz="0 0 -0.47"/>
+        <limit effort="0.01" velocity="0.4"/>
+        <axis xyz="1 0 0"/>
+    </joint>
+
+    <link name="right_caster">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <geometry>
+                <cylinder length="0.05" radius=".125"/>
+            </geometry>
+            <material name="grey"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <mass value="1"/>
+            <inertia ixx="0.00411" ixy="0.0" ixz="0.0" iyy="0.00411" iyz="0.0" izz="0.007812"/>
+        </inertial>
+    </link>
+
+    <gazebo reference="right_caster">
+        <!--kp>1000.0</kp>
+        <kd>10.0</kd>
+        <mu1>10.0</mu1>
+        <mu2>10.0</mu2-->
+
+        <material>Gazebo/Grey</material>
+    </gazebo>
+
+    <joint name="forklift_base_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="forklift_base"/>
+        <origin rpy="0 0 0" xyz="0 -0.35 0"/>
+    </joint>
+
+    <link name="forklift_base">
+        <visual>
+            <origin xyz="0 0 0.5" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.84 0.09 2"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.5" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.84 0.09 2"/>
+            </geometry>
+            <material name="black"/>
+
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0.5" rpy="0 0 0"/>
+            <mass value="200"/>
+            <inertia ixx="66.801" ixy="0.0" ixz="0.0" iyy="78.4266" iyz="0.0" izz="11.895000"/>
+        </inertial>
+    </link>
+
+    <gazebo reference="forklift_base">
+    
+       <material>Gazebo/Black</material>
+    </gazebo>
+
+    <joint name="laser_joint" type="fixed">
+        <parent link="forklift_base"/>
+        <child link="laser_link"/>
+        <origin rpy="0 0 0" xyz="0 0 1.52"/>
+    </joint>
+
+    <link name="laser_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.04 0.04 0.04"/>
+            </geometry>
+            <material name="red"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.05"/>
+            <inertia ixx="0.00e-09" ixy="0.0" ixz="0.0" iyy="0.00e-09" iyz="0.0" izz="0.00e-09"/>
+        </inertial>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.04 0.04 0.04"/>
+            </geometry>
+        </collision>
+
+    </link>
+
+    <gazebo reference="laser_link">
+      <sensor type="gpu_ray" name="head_hokuyo_sensor">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>true</visualize>
+            <update_rate>40</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>720</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-3.14</min_angle>
+                        <max_angle>3.14</max_angle>
+                    </horizontal>
+                    <vertical>
+                        <samples>1</samples>
+                        <resolution>1</resolution>
+                        <min_angle>0</min_angle>
+                        <max_angle>0</max_angle>
+                    </vertical>
+                </scan>
+                <range>
+                    <min>0.10</min>
+                    <max>30.0</max>
+                    <resolution>0.01</resolution>
+                </range>
+                <noise>
+                <type>gaussian</type>
+                    <mean>0.0</mean>
+                    <stddev>0.01</stddev>
+                </noise>
+          </ray>
+
+          <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_gpu_laser.so">
+            <topicName>/laser_scan</topicName>
+            <frameName>laser_link</frameName>
+          </plugin>
+
+      </sensor>
+    </gazebo>
+    <gazebo reference="laser_link">
+        <!--kp>1000.0</kp>
+        <kd>10.0</kd>
+        <mu1>10.0</mu1>
+        <mu2>10.0</mu2-->
+
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+    <joint name="camera_joint1" type="fixed">
+        <parent link="forklift_base"/>
+        <child link="camera_link1"/>
+        <origin rpy="0 0 0" xyz="0 -0.055 1.2"/>
+    </joint>
+
+    <link name="camera_link1">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.04 0.04 0.04"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.05"/>
+            <inertia ixx="0.00e-09" ixy="0.0" ixz="0.0" iyy="0.00e-09" iyz="0.0" izz="0.00e-09"/>
+        </inertial>
+    </link>
+
+    <gazebo reference="camera_link1">
+        <material>Gazebo/Green</material>
+    </gazebo>
+
+    <gazebo reference="camera_link1">
+      <sensor type="camera" name="camera1">
+        <update_rate>15.0</update_rate>
+        <camera name="head">
+            <pose>0 0 0 0 0 0</pose>
+            <horizontal_fov>1.3962</horizontal_fov>
+            <image>
+                <width>400</width>
+                <height>400</height>
+                <format>R8G8B8</format>
+            </image>
+            <clip>
+                <near>0.01</near>
+                <far>100</far>
+            </clip>
+            <noise>
+                <type>gaussian</type>
+                <mean>0.0</mean>
+                <stddev>0.007</stddev>
+            </noise>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <alwayson>true</alwayson>
+            <updateRate>0.0</updateRate>
+            <cameraName>agv/camera1</cameraName>
+            <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <frameName>camera_link1</frameName>
+            <hackBaseLine>0.07</hackBaseLine>
+            <distortionk1>0.0</distortionk1>
+            <distortionk2>0.0</distortionk2>
+            <distortionk3>0.0</distortionk3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+        </plugin>
+     </sensor>
+   </gazebo>
+
+    <joint name="camera_joint2" type="fixed">
+        <parent link="forklift_base"/>
+        <child link="camera_link2"/>
+        <origin rpy="0 0 0" xyz="0 0.055 1.2"/>
+    </joint>
+
+    <link name="camera_link2">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.04 0.04 0.04"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.05"/>
+            <inertia ixx="0.00e-09" ixy="0.0" ixz="0.0" iyy="0.00e-09" iyz="0.0" izz="0.00e-09"/>
+        </inertial>
+    </link>
+
+    <gazebo reference="camera_link2">
+        <material>Gazebo/Green</material>
+    </gazebo>
+
+    <gazebo reference="camera_link2">
+      <sensor type="camera" name="camera2">
+        <update_rate>15.0</update_rate>
+        <camera name="head">
+            <pose>0 0 0 0 0 0</pose>
+            <horizontal_fov>1.3962</horizontal_fov>
+            <image>
+                <width>400</width>
+                <height>400</height>
+                <format>R8G8B8</format>
+            </image>
+            <clip>
+                <near>0.01</near>
+                <far>100</far>
+            </clip>
+            <noise>
+                <type>gaussian</type>
+                <mean>0.0</mean>
+                <stddev>0.007</stddev>
+            </noise>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+            <alwayson>true</alwayson>
+            <updateRate>0.0</updateRate>
+            <cameraName>agv/camera2</cameraName>
+            <imageTopicName>image_raw</imageTopicName>
+            <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+            <frameName>camera_link2</frameName>
+            <hackBaseLine>0.07</hackBaseLine>
+            <distortionk1>0.0</distortionk1>
+            <distortionk2>0.0</distortionk2>
+            <distortionk3>0.0</distortionk3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+        </plugin>
+     </sensor>
+   </gazebo>
+
+
+
+    <joint name="forklift_prismatic_joint" type="prismatic">
+        <parent link="forklift_base"/>
+        <child link="forklift_prismatic_link"/>
+        <origin rpy="0 0 0" xyz="0 -0.07 0"/>
+        <limit effort="10" velocity="1.0" lower="-0.5" upper="0.5"/>
+        <axis xyz="0 0 1"/>
+        <calibration rising="-0.5"/>
+         
+    </joint>
+
+
+    <transmission name="trans3">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="forklift_prismatic_joint">
+         <hardwareInterface>EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor3">
+          <hardwareInterface>EffortJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+
+   </transmission>
+
+
+
+    <link name="forklift_prismatic_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.84 0.05 0.06"/>
+            </geometry>
+            <material name="yellow"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.84 0.05 0.06"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="10"/>
+            <inertia ixx="0.005083" ixy="0.0" ixz="0.0" iyy="0.59100" iyz="0.0" izz="0.5900"/>
+
+        </inertial>
+    </link>
+
+    <gazebo reference="forklift_prismatic_link">
+        <!--kp>1000.0</kp>
+        <kd>10.0</kd>
+        <mu1>10.0</mu1>
+        <mu2>10.0</mu2-->
+
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <joint name="prismatic_left_base_link" type="fixed">
+        <parent link="forklift_prismatic_link"/>
+        <child link="prismatic_left_moving_link"/>
+        <origin xyz="-0.280 -0.025 0" rpy="0 0 0"/>
+    </joint>
+
+
+    <link name="prismatic_left_moving_link">
+        <visual>
+            <origin xyz="0 -0.55 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.285 1.1 0.06"/>
+            </geometry>
+            <material name="yellow"/>
+        </visual>
+        <collision>
+            <origin xyz="0 -0.55 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.285 1.1 0.06"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 -0.55 0" rpy="0 0 0"/>
+            <mass value="100"/>
+            <inertia ixx="10.1133" ixy="0.0" ixz="0.0" iyy="0.70" iyz="0.0" izz="10.760"/>
+        </inertial>
+    </link>
+
+    <joint name="prismatic_right_base_link" type="fixed">
+        <parent link="forklift_prismatic_link"/>
+        <child link="prismatic_right_moving_link"/>
+        <origin xyz="0.280 -0.025 0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="prismatic_right_moving_link">
+        <visual>
+            <origin xyz="0 -0.55 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.285 1.1 0.06"/>
+            </geometry>
+            <material name="yellow"/>
+        </visual>
+        <collision>
+            <origin xyz="0 -0.55 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.285 1.1 0.06"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 -0.55 0" rpy="0 0 0"/>
+            <mass value="100"/>
+            <inertia ixx="10.1133" ixy="0.0" ixz="0.0" iyy="0.70" iyz="0.0" izz="10.760"/>
+        </inertial>
+    </link>
+
+    <joint name="left_bogie_load_joint1" type="continuous">
+        <parent link="prismatic_right_moving_link"/>
+        <child link="left_bogie_load_wheel1"/>
+        <origin rpy="0 0 0" xyz="0 -0.851 -0.03"/>
+        <limit effort="0.01" velocity="0.01"/>
+        <axis xyz="1 0 0"/>
+    </joint>
+
+    <link name="left_bogie_load_wheel1">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <geometry>
+                <cylinder length="0.07" radius="0.041"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <mass value="0.4"/>
+            <inertia ixx="0.00031" ixy="0.0" ixz="0.0" iyy="0.00031" iyz="0.0" izz="0.000336"/>
+        </inertial>
+    </link>
+
+    <gazebo reference="left_bogie_load_wheel1">
+        <kp>1000.0</kp>
+        <kd>10.0</kd>
+        <mu1>10.0</mu1>
+        <mu2>10.0</mu2>
+
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+
+
+
+    <joint name="left_bogie_load_joint2" type="continuous">
+        <parent link="prismatic_right_moving_link"/>
+        <child link="left_bogie_load_wheel2"/>
+        <origin rpy="0 0 0" xyz="0 -0.769 -0.03"/>
+        <limit effort="0.01" velocity="0.01"/>
+        <axis xyz="1 0 0"/>
+    </joint>
+
+    <link name="left_bogie_load_wheel2">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <geometry>
+                <cylinder length="0.07" radius="0.041"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <mass value=".4"/>
+            <inertia ixx="0.00031" ixy="0.0" ixz="0.0" iyy="0.00031" iyz="0.0" izz="0.000336"/>
+        </inertial>
+    </link>
+
+    <gazebo reference="left_bogie_load_wheel2">
+        <kp>1000.0</kp>
+        <kd>10.0</kd>
+        <mu1>10.0</mu1>
+        <mu2>10.0</mu2>
+
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+
+    <joint name="right_bogie_load_joint1" type="continuous">
+        <parent link="prismatic_left_moving_link"/>
+        <child link="right_bogie_load_wheel1"/>
+        <origin rpy="0 0 0" xyz="0 -0.851 -0.03"/>
+        <limit effort="0.01" velocity="0.01"/>
+        <axis xyz="1 0 0"/>
+    </joint>
+
+    <link name="right_bogie_load_wheel1">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <geometry>
+                <cylinder length="0.07" radius="0.041"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <mass value="0.4"/>
+            <inertia ixx="0.00031" ixy="0.0" ixz="0.0" iyy="0.00031" iyz="0.0" izz="0.000336"/>
+        </inertial>
+    </link>
+
+    <gazebo reference="right_bogie_load_wheel1">
+        <kp>1000.0</kp>
+        <kd>10.0</kd>
+        <mu1>10.0</mu1>
+        <mu2>10.0</mu2>
+
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+    <joint name="right_bogie_load_joint2" type="continuous">
+        <parent link="prismatic_left_moving_link"/>
+        <child link="right_bogie_load_wheel2"/>
+        <origin rpy="0 0 0" xyz="0 -0.769 -0.03"/>
+        <limit effort="0.01" velocity="0.01"/>
+        <axis xyz="1 0 0"/>
+    </joint>
+
+    <link name="right_bogie_load_wheel2">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <geometry>
+                <cylinder length="0.07" radius="0.041"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 1.57 0"/>
+            <mass value="0.4"/>
+            <inertia ixx="0.00031" ixy="0.0" ixz="0.0" iyy="0.00031" iyz="0.0" izz="0.000336"/>
+        </inertial>
+    </link>
+
+    <gazebo reference="right_bogie_load_wheel2">
+        <kp>1000.0</kp>
+        <kd>10.0</kd>
+        <mu1>10.0</mu1>
+        <mu2>10.0</mu2>
+
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+
+
+  
+  <!--joint name="imu_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="base_link" />
+    <child link="imu_link" />
+  </joint>
+  <gazebo reference="imu_link">
+  </gazebo>
+
+  <link name="imu_link">
+   <inertial>
+    <mass value="0.001"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.0001"/>
+   </inertial>
+   <visual>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <box size="0.001 0.001 0.001"/>
+    </geometry>
+   </visual>
+   <collision>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <geometry>
+      <box size=".001 .001 .001"/>
+    </geometry>
+   </collision>
+   
+  </link-->
+
+  <gazebo>
+       <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+           <robotNamespace>/agv</robotNamespace>
+       </plugin>
+  </gazebo>
+
+
+
+
+
+
+</robot>

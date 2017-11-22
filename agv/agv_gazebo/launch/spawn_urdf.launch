@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--spawn urdf file into the given point in space if gazebo simulation is running-->
+<launch>
+
+      <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+
+    <arg name="x" default="0.0"/>
+    <arg name="y" default="0.0"/>
+    <arg name="z" default="0.0"/>
+    <arg name="urdf_robot_file" default=""/>
+
+    <arg name="robot_name" default=""/>
+
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
+    <arg name="headless" default="false"/>
+    <arg name="debug" default="false"/>
+
+    <!--param name="robot_description" command="cat $(arg urdf_robot_file)"/ #for urdf spawn-->
+
+    <param name="robot_description"
+	 command="$(find xacro)/xacro.py '$(arg urdf_robot_file)'" />
+
+      <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+	  <arg name="world_name" value="$(find agv_gazebo)/worlds/empty.world"/>
+	  <arg name="debug" value="$(arg debug)" />
+	  <arg name="gui" value="$(arg gui)" />
+	  <arg name="paused" value="$(arg paused)"/>
+	  <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+	  <arg name="headless" value="$(arg headless)"/>
+    </include>
+
+    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+          args="
+                -x $(arg x)
+                -y $(arg y)
+                -z $(arg z)
+                -urdf
+                -model $(arg robot_name)
+                -param robot_description"/>
+</launch>
